@@ -1,0 +1,3 @@
+add info to db from file populate_notes:
+
+python manage.py populate_notes
