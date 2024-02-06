@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.urls import reverse
 from .models import Note
@@ -6,8 +6,10 @@ from .models import Note
 
 def welcome(request):
     section_url = reverse('notes:section')
+    read_first_note = reverse('notes:notes_navigation', args=[1])
     return HttpResponse(f'<h1>Welcome to my course notes!</h1>\
-                        <a href="{section_url}">Check the list of section</a>')
+                        <a href="{section_url}">Check the list of section | </a>\
+                        <a href="{read_first_note}">Read my first note</a>')
 
 def get_part(request, part_name):
     section_url = reverse('notes:section')
@@ -44,7 +46,6 @@ def section(request):
 
 
 
-
 def match_web(request, string):
 
     welcome_url = reverse('notes:welcome')
@@ -62,4 +63,26 @@ def match_web(request, string):
 
 
 def notes_navigation(request, note_number):
-    pass
+    welcome_url = reverse('notes:welcome')
+    get_previous = reverse('notes:notes_navigation', args=[note_number - 1])
+    get_next = reverse('notes:notes_navigation', args=[note_number + 1])
+
+    note = get_object_or_404(Note, id=note_number)
+
+    if note_number == 9: 
+        response = HttpResponse(f'<h1>Note number {note_number}</h1><h2>{note.section}</h2>\
+                            <ol>{note.text}</ol><a href="{get_previous}">Previous note | </a>\
+                            <a href="{welcome_url}">Back to home |</a> Next note')
+    elif note_number == 1:
+        response = HttpResponse(f'<h1>Note number {note_number}</h1><h2>{note.section}</h2>\
+                        <ol>{note.text}</ol><p>Previous note | <a href="{welcome_url}">Back to home | </a>\
+                        <a href="{get_next}">Next note</a></p>')
+    else:
+        response = HttpResponse(f'<h1>Note number {note_number}</h1><h2>{note.section}</h2>\
+                        <ol>{note.text}</ol><a href="{get_previous}">Previous note | </a>\
+                        <a href="{welcome_url}">Back to home | </a><a href="{get_next}">Next note</a>')
+    return response 
+
+def redirect_to_notes(request, note_number):
+    return redirect('notes:notes_navigation', note_number=note_number)
+
